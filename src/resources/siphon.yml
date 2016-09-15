@@ -1,0 +1,35 @@
+# Number of slices to cut each day up into. Each slice will be a separate backup file.
+slices: 24
+# (OPTIONAL, default false) Debug mode output (outputs query construction and command line construction, helpful when first configuring.
+debug: false
+# Number of minutes to delay between each slice siphon.
+delay: 1
+# Number of seconds inbetween a check for asynch task completion
+checkDelay: 5
+# If siphon will be accepting input.
+attached: true
+# Where to deposit the backup files. Include trailing path separators as required by your system.
+targetFolder: /backups/
+# Where for SQL to create backup files. Include trailing path separators.
+tmpFolder: /tmp/
+# Optional: wrap the accumulate command (tar) with 'su -c'. Set to false for Windows systems, true for *nix systems as appropriate.
+wrapAccumulate: true
+# The user who should wind up owning the backups. It should be the same user as Siphon is run under.
+# Make sure this user has permission to chown files created by the database.
+targetOwner: devotion
+# Max number of tables to concurrently export or cleanup while producing a slice.
+concurrency: 1
+# How close to target size for the Slice should we get (controls how many queries we will spend to
+# "find" the target)
+fuzz: 100
+# How many datapoints to _always_ keep in the database
+buffer: 1000000
+# Configure the DB
+database:
+  host: localhost
+  port: 3306
+  user: bukkit
+  password:
+  database: devotion
+  # Database specific tmp folder due to console differences in some windows editions.
+  tmpFolder: /tmp/
