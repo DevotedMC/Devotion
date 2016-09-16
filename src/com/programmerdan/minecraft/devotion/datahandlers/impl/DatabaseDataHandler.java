@@ -1,4 +1,4 @@
-package com.programmerdan.minecraft.devotion.datahandlers;
+package com.programmerdan.minecraft.devotion.datahandlers.impl;
 
 import java.sql.SQLException;
 import java.util.logging.Level;
@@ -8,6 +8,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import com.programmerdan.minecraft.devotion.Devotion;
 import com.programmerdan.minecraft.devotion.dao.Flyweight;
 import com.programmerdan.minecraft.devotion.dao.database.SqlDatabase;
+import com.programmerdan.minecraft.devotion.datahandlers.DataHandler;
 import com.programmerdan.minecraft.devotion.util.FlowHelper;
 
 /**
@@ -97,7 +98,7 @@ public class DatabaseDataHandler extends DataHandler {
 	 * Using atomic statistics handler. TODO: self-configure based on results.
 	 */
 	@Override
-	void process() {
+	protected void process() {
 		debug(Level.INFO, "DatabaseDataHandler: Starting commit...");
 		long in = System.currentTimeMillis();
 

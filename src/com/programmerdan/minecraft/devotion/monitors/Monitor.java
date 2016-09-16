@@ -24,7 +24,7 @@ public abstract class Monitor {
 	 * Leveraged by subclasses to set the name of this Monitor
 	 * @param name
 	 */
-	Monitor(String name) {
+	public Monitor(String name) {
 		this.name = name;
 	}
 	
@@ -152,9 +152,9 @@ public abstract class Monitor {
 	 * 
 	 * Should be used to actually _do_ sampling if sampling is active.
 	 */
-	abstract void doSample();
+	protected abstract void doSample();
 	
-	protected boolean canWriteLog(Player player) {
+	public final boolean canWriteLog(Player player) {
 		return !player.hasPermission("Devotion.invisible");
 	}
 }

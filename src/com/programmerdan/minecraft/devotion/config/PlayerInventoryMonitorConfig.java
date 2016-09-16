@@ -12,7 +12,7 @@ public class PlayerInventoryMonitorConfig {
 	public boolean samplingEnabled;
 	public long samplingDelay;
 	public SamplingMethod samplingTechnique;
-	public boolean samplingRecordVehicleInventory;
+	public boolean sampleVehicleInventory;
 
 	public boolean onPlayerOpenEnabled;
 	public long onPlayerOpenTimeout;

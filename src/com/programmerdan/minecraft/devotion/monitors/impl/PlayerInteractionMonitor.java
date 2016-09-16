@@ -1,4 +1,4 @@
-package com.programmerdan.minecraft.devotion.monitors;
+package com.programmerdan.minecraft.devotion.monitors.impl;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +36,8 @@ import com.programmerdan.minecraft.devotion.Devotion;
 import com.programmerdan.minecraft.devotion.config.PlayerInteractionMonitorConfig;
 import com.programmerdan.minecraft.devotion.dao.Flyweight;
 import com.programmerdan.minecraft.devotion.dao.flyweight.FlyweightFactory;
+import com.programmerdan.minecraft.devotion.monitors.Monitor;
+import com.programmerdan.minecraft.devotion.monitors.PlayerInteractionType;
 
 /**
  * Player Interaction Monitor -- tracks interactions with the MC world.
@@ -81,7 +83,7 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 	private PlayerInteractionMonitorConfig config;
 	
 	/**
-	 * Records the 
+	 * Records the last time a capture occurred, across all interactions.
 	 */
 	private ConcurrentHashMap<UUID, long[]> lastCapture;
 	
@@ -151,7 +153,7 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 	}
 
 	@Override
-	void doSample() {
+	protected void doSample() {
 		// Currently unused for this monitor.
 	}
 

@@ -1,4 +1,4 @@
-package com.programmerdan.minecraft.devotion.monitors;
+package com.programmerdan.minecraft.devotion.monitors.impl;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +30,9 @@ import com.programmerdan.minecraft.devotion.Devotion;
 import com.programmerdan.minecraft.devotion.config.PlayerMovementMonitorConfig;
 import com.programmerdan.minecraft.devotion.dao.Flyweight;
 import com.programmerdan.minecraft.devotion.dao.flyweight.FlyweightFactory;
+import com.programmerdan.minecraft.devotion.monitors.Monitor;
+import com.programmerdan.minecraft.devotion.monitors.MonitorSamplingThread;
+import com.programmerdan.minecraft.devotion.monitors.SamplingMethod;
 
 /**
  * Player Movement Monitor -- tracks movement related calls.
@@ -233,6 +236,7 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 	 * Called by MonitorThread, triggers a periodic sampling process
 	 * 
 	 * TODO: This might not be safe to call the Bukkit function. Trying it, we can recode if unsafe.
+	 * TODO: incomplete
 	 */
 	protected void doSample() {
 		if (!isEnabled()) return; // not enabled, stopping.

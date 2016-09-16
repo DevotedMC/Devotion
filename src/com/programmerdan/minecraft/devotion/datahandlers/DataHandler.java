@@ -33,7 +33,7 @@ public abstract class DataHandler extends BukkitRunnable {
 	 * Allows subclasses to give it a name
 	 * @param name
 	 */
-	DataHandler(String name) {
+	protected DataHandler(String name) {
 		this.name = name;
 	}
 	
@@ -259,7 +259,7 @@ public abstract class DataHandler extends BukkitRunnable {
 	 * 
 	 * Ideally they should respect {@link #maxRun} using {@link #getMaxRun()}
 	 */
-	abstract void process();
+	protected abstract void process();
 
 	/**
 	 * Called by the scheduler.

@@ -45,3 +45,5 @@ Gotchas:
 THIS IS NOT AN ANALYTICS PLATFORM. This simply monitors. Perform your own associations; or keep your eyes open for a Django-based webapp that allows deep inspection of this data and analytics. Maybe.
 
 The goal here is to track everything, so if reports of untoward behavior are received, you as operator have the ability to see and know everything that *actually* happened.
+
+See [Siphon-README.md](Siphon-README.md) for details on an offloading platform that works in the background and does everything possible to minimize lag impact of offload.

@@ -1,10 +1,17 @@
 package com.programmerdan.minecraft.devotion;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.google.common.reflect.ClassPath;
 import com.programmerdan.minecraft.devotion.commands.CommandHandler;
 import com.programmerdan.minecraft.devotion.dao.Flyweight;
 import com.programmerdan.minecraft.devotion.dao.flyweight.FlyweightFactory;
@@ -20,6 +27,7 @@ import com.programmerdan.minecraft.devotion.monitors.Monitor;
 public class Devotion extends JavaPlugin {
 	private CommandHandler commandHandler;
 	private static Devotion instance;
+	private Logger logger;
 	private boolean debug = false;
 
 	private Vector<Monitor> activeMonitors;
@@ -112,13 +120,14 @@ public class Devotion extends JavaPlugin {
 	public void onEnable() {
 		// setting a couple of static fields so that they are available elsewhere
 		instance = this;
+		logger = this.getLogger();
 		commandHandler = new CommandHandler(this);
 		activeMonitors = new Vector<Monitor>();
 		dataHandlers = new Vector<DataHandler>();
 		
 		FlyweightFactory.init();
 
-		if (ConfigurationReader.readConfig()) {
+		if (prepareConfig() && dataHandlers.size() > 0 && activeMonitors.size() > 0) {
 			for (DataHandler dh : dataHandlers) {
 				dh.begin();
 			}
@@ -130,6 +139,103 @@ public class Devotion extends JavaPlugin {
 			this.setEnabled(false);
 			return;
 		}
+	}
+	
+	private boolean prepareConfig() {
+		logger.info("Loading configuration");
+
+		instance.saveDefaultConfig();
+		instance.reloadConfig();
+		FileConfiguration conf = instance.getConfig();
+
+		instance.setDebug(conf.getBoolean("debug", false));
+
+		if (instance.isDebug()) {
+			logger.info("Devotion Debug mode active");
+		}
+		
+		// Discover and configure Monitors
+		ConfigurationSection monitors = conf.getConfigurationSection("monitors");
+		ClassPath getClassesPath = null;
+		try {
+			getClassesPath = ClassPath.from(this.getClassLoader());
+		} catch (IOException ioe) {
+			logger.log(Level.WARNING, "Failed to get classloader!", ioe);
+			return false;
+		}
+
+		for (ClassPath.ClassInfo clsInfo : getClassesPath.getTopLevelClasses("com.programmerdan.minecraft.devotion.monitors.impl")) {
+			Monitor mon = null;
+			Class<?> clazz = clsInfo.load();
+			logger.log(Level.INFO, "Found a potential monitor in {0}, attempting to find a suitable constructor", clazz.getName());
+			try {
+				if (clazz != null && Monitor.class.isAssignableFrom(clazz)) {
+					Method montMethod = clazz.getMethod("generate", ConfigurationSection.class);
+					mon = (Monitor) montMethod.invoke(null, 
+							monitors.getConfigurationSection(clazz.getSimpleName()));
+				} else {
+					logger.log(Level.INFO, "Found class {0} but is not a valid monitor. Skipping.", clazz);
+				}
+			} catch (NoSuchMethodException msme) {
+				logger.log(Level.INFO, "Monitor defined as {0} is not well formed, lacks generate function.", clazz);
+			} catch (SecurityException se) {
+				logger.log(Level.INFO, "Monitor defined as {0} has reflection-inhibiting security.", clazz);
+			} catch (IllegalAccessException iae) {
+				logger.log(Level.INFO, "Monitor defined as {0} has access-inhibiting security.", clazz);
+			} catch (IllegalArgumentException iae2) {
+				logger.log(Level.INFO, "Monitor defined as {0} does not accept the correct parameters.", clazz);
+			} catch (InvocationTargetException ite) {
+				logger.log(Level.WARNING, "While provisioning Monitor from " + clazz + ", it threw an exception.", ite);
+			} catch (NullPointerException npe) {
+				logger.log(Level.WARNING, "While provisioning Monitor from " + clazz + ", it threw an NPE.", npe);
+			}
+
+			if (mon != null) { 
+				logger.log(Level.INFO, "Monitor {0} instantiated, registering.", mon);
+				this.registerMonitor(mon);
+			}
+		}
+		
+		// Discover and configure DAO
+		ConfigurationSection dao = conf.getConfigurationSection("dao");
+
+		for (ClassPath.ClassInfo clsInfo : getClassesPath.getTopLevelClasses("com.programmerdan.minecraft.devotion.datahandlers.impl")) {
+			DataHandler han = null;
+			Class<?> clazz = clsInfo.load();
+			logger.log(Level.INFO, "Found a potential Data Handler in {0}, attempting to find a suitable constructor", clazz.getName());
+			try {
+				ConfigurationSection handler = dao.getConfigurationSection(clazz.getSimpleName());
+				if (handler == null){
+					logger.log(Level.WARNING, "No configuration supplied for potential Data Handler {0}, skipping.\nIf you want to use it, add a section {0}: under dao: in config.", clazz.getSimpleName());
+				} else {
+					if (DataHandler.class.isAssignableFrom(clazz)) {
+						Method handMethod = clazz.getMethod("generate", ConfigurationSection.class);
+						han = (DataHandler) handMethod.invoke(null, handler);
+					} else {
+						logger.log(Level.INFO, "Found class {0} but is not a valid DataHandler. Skipping.", clazz);
+					}					
+				}
+			} catch (NoSuchMethodException msme) {
+				logger.log(Level.INFO, "DataHandler defined as {0} is not well formed, lacks generate function.", clazz);
+			} catch (SecurityException se) {
+				logger.log(Level.INFO, "DataHandler defined as {0} has reflection-inhibiting security.", clazz);
+			} catch (IllegalAccessException iae) {
+				logger.log(Level.INFO, "DataHandler defined as {0} has access-inhibiting security.", clazz);
+			} catch (IllegalArgumentException iae2) {
+				logger.log(Level.INFO, "DataHandler defined as {0} does not accept the correct parameters.", clazz);
+			} catch (InvocationTargetException ite) {
+				logger.log(Level.WARNING,"While provisioning DataHandler from " + clazz + ", it threw an exception.", ite);
+			} catch (NullPointerException npe) {
+				logger.log(Level.WARNING,"While provisioning DataHandler from " + clazz + ", it threw an NPE.", npe);
+			}
+			
+			if (han != null) { 
+				logger.log(Level.INFO, "DataHandler {0} instantiated, registering.", clazz);
+				Devotion.instance().registerDataHandler(han);
+			}
+		}
+		
+		return true;
 	}
 
 	/**
