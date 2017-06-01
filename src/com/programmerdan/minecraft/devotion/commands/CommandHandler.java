@@ -10,7 +10,9 @@ import org.bukkit.command.CommandSender;
 
 import com.programmerdan.minecraft.devotion.Devotion;
 import com.programmerdan.minecraft.devotion.commands.command.Control;
+import com.programmerdan.minecraft.devotion.commands.command.Help;
 import com.programmerdan.minecraft.devotion.commands.command.Stats;
+import com.programmerdan.minecraft.devotion.commands.command.Watch;
 
 public class CommandHandler implements CommandExecutor {
 
@@ -25,7 +27,9 @@ public class CommandHandler implements CommandExecutor {
 
 		registerCommands(new AbstractCommand[] {
 					new Stats(instance, "stats"),
-					new Control(instance, "control")
+					new Control(instance, "control"),
+					new Watch(instance, "watch"),
+					new Help(instance, "help")
 				});
 	}
 

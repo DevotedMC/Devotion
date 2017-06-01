@@ -4,10 +4,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,6 +27,10 @@ import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 
 import com.programmerdan.minecraft.devotion.Devotion;
 import com.programmerdan.minecraft.devotion.config.PlayerMovementMonitorConfig;
@@ -77,7 +83,7 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 	}
 	
 	private PlayerMovementMonitor(PlayerMovementMonitorConfig config) {
-		super("movement");
+		super("PlayerMovementMonitor");
 		this.config = config;
 	}
 	
@@ -85,10 +91,15 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 		if (config == null) return null;
 		PlayerMovementMonitorConfig pmmc = new PlayerMovementMonitorConfig();
 		pmmc.technique = SamplingMethod.valueOf(config.getString("sampling", "onevent"));
+		if (pmmc.technique.equals(SamplingMethod.roundrobin)) {
+			Devotion.logger().log(Level.WARNING, "sampling of roundrobin is not supported for PlayerMovementMonitor, using periodic instead");
+			pmmc.technique = SamplingMethod.periodic;
+		}
 		pmmc.timeoutBetweenSampling = config.getLong("sampling_period", 1000l);
 		pmmc.sampleSize = config.getInt("sampling_size", 50);
 		PlayerMovementMonitor pmm = new PlayerMovementMonitor(pmmc);
 		pmm.setDebug(config.getBoolean("debug", Devotion.instance().isDebug()));
+		pmm.initWatch(config);
 		
 		return pmm;
 	}
@@ -133,6 +144,8 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 		}
 
 		super.setEnabled(false);
+		
+		super.commitWatch();
 		
 		if (playersToMonitor != null) playersToMonitor.clear();
 		if (playersToRemove != null) playersToRemove.clear();
@@ -181,6 +194,67 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 				insert(event);
 				lastMovementSample.put(p, System.currentTimeMillis());
 			}
+		}
+	}
+	
+	/**
+	 * Captures movement events for vehicles, too!
+	 * @see #onPlayerMove(PlayerMoveEvent)
+	 * 
+	 * @param event
+	 */
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=false)
+	public void onVehicleMove(VehicleMoveEvent event) {
+		Entity e = event.getVehicle().getPassenger();
+		// TODO: 1.11 supports retrieval of passenger, 1.10 doesn't without NBT
+		if (e instanceof Player) {
+			Player p = (Player) e;
+
+			if (!canWriteLog(p)) return;
+			if (onlyAsynch) {
+				checkAdd(p.getUniqueId());
+				return;
+			}
+			
+			if (onlyEvent) {
+				if (this.config.timeoutBetweenSampling <= 0) { // bypass throttling by setting timeout to 0.
+					insert(event);
+				} else {
+					UUID u = p.getUniqueId();
+					Long lastSample = lastMovementSample.get(u);
+					long timePassed = lastSample != null ? System.currentTimeMillis() - lastSample: config.timeoutBetweenSampling;
+					
+					if (timePassed < this.config.timeoutBetweenSampling) return;
+					
+					insert(event);
+					lastMovementSample.put(u, System.currentTimeMillis());
+				}
+			}
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=false)
+	public void onVehicleEnter(VehicleEnterEvent event) {
+		Entity e = event.getEntered();
+		// TODO: 1.11 supports retrieval of passenger, 1.10 doesn't without NBT
+		if (e instanceof Player) {
+			Player p = (Player) e;
+
+			if (!canWriteLog(p)) return;
+			insert(event);
+		}
+	}
+
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=false)
+	public void onVehicleExit(VehicleExitEvent event) {
+		Entity e = event.getExited();
+		// TODO: 1.11 supports retrieval of passenger, 1.10 doesn't without NBT
+		if (e instanceof Player) {
+			Player p = (Player) e;
+
+			if (!canWriteLog(p)) return;
+			insert(event);
 		}
 	}
 	
@@ -263,6 +337,16 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 	 * @param event
 	 */
 	private void insert(PlayerEvent event) {
+		Flyweight flyweight = FlyweightFactory.create(event);
+		
+		Devotion.instance().insert(flyweight);
+	}
+	
+	/**
+	 * Quickly create a flyweight and pass it along to the active handlers.
+	 * @param event
+	 */
+	private void insert(VehicleEvent event) {
 		Flyweight flyweight = FlyweightFactory.create(event);
 		
 		Devotion.instance().insert(flyweight);

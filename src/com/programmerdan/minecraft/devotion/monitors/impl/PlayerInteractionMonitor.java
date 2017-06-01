@@ -1,7 +1,10 @@
 package com.programmerdan.minecraft.devotion.monitors.impl;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Event;
@@ -110,7 +113,7 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 	}
 	
 	private PlayerInteractionMonitor(PlayerInteractionMonitorConfig config) {
-		super("interaction");
+		super("PlayerInteractionMonitor");
 		this.config = config;
 	}
 	
@@ -120,6 +123,7 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 		pimc.delayBetweenSamples = config.getLong("sampling_delay", 10l);
 		PlayerInteractionMonitor pim = new PlayerInteractionMonitor(pimc);
 		pim.setDebug(config.getBoolean("debug", Devotion.instance().isDebug()));
+		pim.initWatch(config);
 		return pim;
 	}
 	
@@ -149,6 +153,8 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 
 		super.setEnabled(false);
 		
+		super.commitWatch();
+				
 		if (lastCapture != null) lastCapture.clear();
 	}
 

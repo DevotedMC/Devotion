@@ -183,6 +183,11 @@ public class SqlDatabase {
     public DropItemSource getDropItemSource() {
     	return this.dropItemSource;
     }
+    
+    private PlayerVehicleSource vehicleSource;
+    public PlayerVehicleSource getPlayerVehicleSource() {
+    	return this.vehicleSource;
+    }
 
     public SqlDatabase(String host, int port, String db, String user, String password, Logger logger) {
         this.host = host;
@@ -248,6 +253,7 @@ public class SqlDatabase {
     	this.sourceList.add(this.blockPlaceSource = new BlockPlaceSource(this));
     	this.sourceList.add(this.blockBreakSource = new BlockBreakSource(this));
     	this.sourceList.add(this.dropItemSource = new DropItemSource(this));
+    	this.sourceList.add(this.vehicleSource = new PlayerVehicleSource(this));
     }
     
     public void close() {

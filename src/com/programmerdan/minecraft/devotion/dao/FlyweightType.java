@@ -50,4 +50,7 @@ public class FlyweightType {
 	public static final FlyweightType PlayerDeath = new FlyweightType((byte) 0x20, "PlayerDeath");
 	public static final FlyweightType BlockPlace = new FlyweightType((byte) 0x21, "BlockPlace");
 	public static final FlyweightType BlockBreak = new FlyweightType((byte) 0x22, "BlockBreak");
+	public static final FlyweightType VehicleMove = new FlyweightType((byte) 0x23, "VehicleMove");
+	public static final FlyweightType VehicleEnter = new FlyweightType((byte) 0x24, "VehicleEnter");
+	public static final FlyweightType VehicleExit = new FlyweightType((byte) 0x25, "VehicleExit");
 }

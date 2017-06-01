@@ -3,10 +3,12 @@ package com.programmerdan.minecraft.devotion;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,6 +19,8 @@ import com.programmerdan.minecraft.devotion.dao.Flyweight;
 import com.programmerdan.minecraft.devotion.dao.flyweight.FlyweightFactory;
 import com.programmerdan.minecraft.devotion.datahandlers.DataHandler;
 import com.programmerdan.minecraft.devotion.monitors.Monitor;
+import com.programmerdan.minecraft.devotion.util.NameAPIUUIDResolver;
+import com.programmerdan.minecraft.devotion.util.UUIDResolver;
 
 /**
  * <p>Devotion quietly and un-obtrusively tracks everything everyone does. Check the README for details.</p>
@@ -29,6 +33,8 @@ public class Devotion extends JavaPlugin {
 	private static Devotion instance;
 	private Logger logger;
 	private boolean debug = false;
+	
+	private UUIDResolver resolver;
 
 	private Vector<Monitor> activeMonitors;
 	
@@ -121,9 +127,11 @@ public class Devotion extends JavaPlugin {
 		// setting a couple of static fields so that they are available elsewhere
 		instance = this;
 		logger = this.getLogger();
+		resolver = (Bukkit.getPluginManager().isPluginEnabled("NameLayer") ? new NameAPIUUIDResolver() : new UUIDResolver());
 		commandHandler = new CommandHandler(this);
 		activeMonitors = new Vector<Monitor>();
 		dataHandlers = new Vector<DataHandler>();
+		Bukkit.getPluginManager().registerEvents(new WatchListener(), this);
 		
 		FlyweightFactory.init();
 
@@ -257,5 +265,9 @@ public class Devotion extends JavaPlugin {
 		activeMonitors.clear();
 		dataHandlers.clear();
 		instance = null;
+	}
+
+	public UUIDResolver getUUIDResolver() {
+		return this.resolver;
 	}
 }

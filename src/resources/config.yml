@@ -36,8 +36,14 @@ monitors:
   movement:
     sampling: onevent
     sampling_period: 1000
+# List of people to monitor. Only loaded on startup or modified by /dev-w command while running.
+    watch:
+    - 1e4ac1d6-5ca3-4bd4-8a1e-63e82d174152
 #   sampling_size: 5  (for continuous/roundrobin)
   interaction:
     sampling_delay: 5
-  inventory:
-    active: true
+    watch:
+    - 1e4ac1d6-5ca3-4bd4-8a1e-63e82d174152
+#  inventory:
+#    active: true
+

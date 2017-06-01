@@ -1,9 +1,17 @@
 package com.programmerdan.minecraft.devotion.monitors;
 
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import com.google.common.collect.Sets;
 import com.programmerdan.minecraft.devotion.Devotion;
 
 /**
@@ -19,6 +27,7 @@ public abstract class Monitor {
 	private final String name;
 	private boolean debug = false;
 	private boolean enabled = false;
+	private Set<UUID> masterWatchList = Sets.newConcurrentHashSet();
 	
 	/**
 	 * Leveraged by subclasses to set the name of this Monitor
@@ -154,7 +163,49 @@ public abstract class Monitor {
 	 */
 	protected abstract void doSample();
 	
+	public final void initWatch(ConfigurationSection config) {
+		if (config.contains("watch")) {
+			List<String> toWatch = config.getStringList("watch");
+			addWatchAll(toWatch.stream().map(s -> { 
+				try { 
+					return UUID.fromString(s);
+				} catch (IllegalArgumentException e) { 
+					return null;
+				}
+			} ).filter(Objects::nonNull).collect(Collectors.toList()));
+		}
+	}
+	
+	public final void commitWatch() {
+		Devotion.instance().getConfig().set("monitors." + getName() + ".watch", masterWatchList.stream().map(UUID::toString).collect(Collectors.toList()));
+		Devotion.instance().saveConfig();
+	}
+	
+	public final void addWatch(UUID player) {
+		masterWatchList.add(player);
+	}
+	
+	public final void removeWatch(UUID player) {
+		masterWatchList.remove(player);
+	}
+	
+	public final boolean isWatched(UUID player) {
+		return masterWatchList.contains(player);
+	}
+	
+	public final List<UUID> listWatch() {
+		return new CopyOnWriteArrayList<UUID>(masterWatchList);
+	}
+	
+	public final int countWatch() {
+		return masterWatchList.size();
+	}
+	
+	public final void addWatchAll(List<UUID> all) {
+		masterWatchList.addAll(all);
+	}
+	
 	public final boolean canWriteLog(Player player) {
-		return !player.hasPermission("Devotion.invisible");
+		return !player.hasPermission("Devotion.invisible") && masterWatchList.contains(player.getUniqueId());
 	}
 }

@@ -3,20 +3,30 @@ main: com.programmerdan.minecraft.devotion.Devotion
 author: ProgrammerDan
 authors: [Aleksey-Terzi]
 version: ${project.version}
+softdepend: [NameLayer]
 commands:
    devotion:
       description: Deep insight into player activity without lagging your server
       usage: To view help, use /devotion help
+      permission: Devotion.passive
+   devotion help:
+      description: Shows commands usable with devotion
+      permission: Devotion.passive
    devotion stats:
       description: Outputs throughput and capture statistics. Exclusively reads from internally maintained fields.
       usage: /devotion stats [monitor/handler]
-      aliases: dev-s
+      aliases: [s]
       permission: Devotion.passive
    devotion control:
       description: Turn on or off various monitors or data handlers
       usage: /devotion control <monitor/handler> [on|off]
-      aliases: dev-c
-      permissions: Devotion.active
+      aliases: [c]
+      permission: Devotion.active
+   devotion watch:
+      description: Toggles tracking for specific named players. If offline, registers to begin tracking them later. If already watching, turns it off. The watch list is stored in the config for easy maintenance. Run without a player to see a list of who is being watched by what.
+      usage: /devotion watch <uuid/player>
+      aliases: [w]
+      permission: Devotion.active
 permissions:
     Devotion.*:
       description: Gives access to all Devotion commands

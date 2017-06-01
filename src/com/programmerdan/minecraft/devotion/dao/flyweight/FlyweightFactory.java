@@ -41,6 +41,9 @@ import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 
 import com.programmerdan.minecraft.devotion.dao.DAOException;
 import com.programmerdan.minecraft.devotion.dao.FlyweightType;
@@ -91,6 +94,9 @@ public class FlyweightFactory {
 		Definitions.add(new EventDefinition(FlyweightType.BlockPlace.getId(), BlockPlaceEvent.class));
 		Definitions.add(new EventDefinition(FlyweightType.BlockPlace.getId(), BlockMultiPlaceEvent.class));
 		Definitions.add(new EventDefinition(FlyweightType.BlockBreak.getId(), BlockBreakEvent.class));
+		Definitions.add(new EventDefinition(FlyweightType.VehicleMove.getId(), VehicleMoveEvent.class));
+		Definitions.add(new EventDefinition(FlyweightType.VehicleEnter.getId(), VehicleEnterEvent.class));
+		Definitions.add(new EventDefinition(FlyweightType.VehicleExit.getId(), VehicleExitEvent.class));
 	}
 	
 	public static fPlayer create(Event event) {
@@ -138,6 +144,10 @@ public class FlyweightFactory {
 		if(id == FlyweightType.PlayerDeath.getId()) return new fPlayerDeath((PlayerDeathEvent)event);
 		if(id == FlyweightType.BlockPlace.getId()) return new fBlockPlace((BlockPlaceEvent)event);
 		if(id == FlyweightType.BlockBreak.getId()) return new fBlockBreak((BlockBreakEvent)event);
+		if(id == FlyweightType.VehicleMove.getId()) return new fPlayerVehicleMove((VehicleMoveEvent)event);
+		if(id == FlyweightType.VehicleEnter.getId()) return new fPlayerVehicleEnter((VehicleEnterEvent)event);
+		if(id == FlyweightType.VehicleExit.getId()) return new fPlayerVehicleExit((VehicleExitEvent)event);
+		
 		
 		throw new DAOException("Event with ID = " + id + " is not registered.");
 	}

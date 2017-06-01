@@ -42,7 +42,7 @@ public class PlayerInventoryMonitor extends Monitor implements Listener {
 	}
 	
 	private PlayerInventoryMonitor(PlayerInventoryMonitorConfig config) {
-		super("interaction");
+		super("PlayerInventoryMonitor");
 		this.config = config;
 	}
 	
@@ -53,6 +53,7 @@ public class PlayerInventoryMonitor extends Monitor implements Listener {
 		pimc.samplingEnabled = config.getBoolean("sampling_enabled", false);
 		PlayerInventoryMonitor pim = new PlayerInventoryMonitor(pimc);
 		pim.setDebug(config.getBoolean("debug", Devotion.instance().isDebug()));
+		pim.initWatch(config);
 		return pim;
 	}
 	
@@ -85,7 +86,13 @@ public class PlayerInventoryMonitor extends Monitor implements Listener {
 
 	@Override
 	public void onDisable() {
-		// TODO Auto-generated method stub
+		if (!super.isEnabled()) {
+			return;
+		}
+
+		super.setEnabled(false);
+		
+		super.commitWatch();
 		
 	}
 
