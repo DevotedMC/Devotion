@@ -177,6 +177,7 @@ public abstract class Monitor {
 	}
 	
 	public final void commitWatch() {
+		Devotion.instance().reloadConfig(); // get changes first
 		Devotion.instance().getConfig().set("monitors." + getName() + ".watch", masterWatchList.stream().map(UUID::toString).collect(Collectors.toList()));
 		Devotion.instance().saveConfig();
 	}
@@ -208,4 +209,8 @@ public abstract class Monitor {
 	public final boolean canWriteLog(Player player) {
 		return !player.hasPermission("Devotion.invisible") && masterWatchList.contains(player.getUniqueId());
 	}
+	
+	public abstract boolean setConfig(String path, Object value);
+	
+	public abstract String getConfigs();
 }

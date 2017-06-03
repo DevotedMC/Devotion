@@ -7,6 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
+import com.programmerdan.minecraft.devotion.api.WatchCheck;
 import com.programmerdan.minecraft.devotion.api.WatchEvent;
 
 /**
@@ -57,5 +58,16 @@ public class WatchListener implements Listener {
 			} );
 			break;
 		}
+	}
+	
+	@EventHandler
+	public void onWatchCheck(WatchCheck event) {
+		Devotion.logger().log(Level.INFO, "Check watch for {0}", event.getPlayer());
+		UUID player = event.getPlayer();
+		Devotion.instance().getMonitors().forEach( (m) -> {
+			if (m.isWatched(player)) {
+				event.addMonitor(m.getName());
+			}
+		});
 	}
 }

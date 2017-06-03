@@ -18,13 +18,18 @@ commands:
       aliases: [s]
       permission: Devotion.passive
    devotion control:
-      description: Turn on or off various monitors or data handlers
+      description: Turn on or off various monitors or data handlers 
       usage: /devotion control <monitor/handler> [on|off]
       aliases: [c]
       permission: Devotion.active
+   devotion config:
+      description: Turn on, off, or configure various aspects of monitors or data handlers.
+      usage: /devotion config <monitor/handler> <attribute> <value>
+      aliases: [f]
+      permission: Devotion.active
    devotion watch:
-      description: Toggles tracking for specific named players. If offline, registers to begin tracking them later. If already watching, turns it off. The watch list is stored in the config for easy maintenance. Run without a player to see a list of who is being watched by what.
-      usage: /devotion watch <uuid/player>
+      description: Toggles tracking for specific named players. If offline, registers to begin tracking them later. If already watching, turns it off. The watch list is stored in the config for easy maintenance. Run without a player to see a list of who is being watched by what. Include explicit add / remove to skip toggle.
+      usage: /devotion watch <uuid/player> [add|remove]
       aliases: [w]
       permission: Devotion.active
 permissions:

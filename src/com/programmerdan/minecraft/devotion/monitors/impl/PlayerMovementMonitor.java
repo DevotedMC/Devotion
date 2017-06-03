@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -387,5 +388,76 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 	 */
 	private void setRemove(UUID player) {
 		playersToRemove.put(player, Boolean.TRUE);
+	}
+	
+
+	@Override
+	public boolean setConfig(String path, Object value) {
+		if ("debug".equalsIgnoreCase(path) && value instanceof Boolean) {
+			this.setDebug((Boolean) value);
+			devotion().getConfig().set("monitors." + getName() + ".debug", (Boolean) value);
+			return true;
+		} else if ("sampling_period".equals(path) && value instanceof String) {
+			try{
+				long current = this.config.timeoutBetweenSampling;
+				long delay = Long.valueOf((String) value);
+				if (delay < 0) return false;
+				this.config.timeoutBetweenSampling = delay;
+				devotion().getConfig().set("monitors." + getName() + ".sampling_period", delay);
+				if (current != delay && !this.onlyAsynch) {
+					// retart.
+					this.onDisable();
+					this.onEnable();
+				}
+				return true;
+			} catch (NumberFormatException nfe) {
+				return false;
+			}
+		} else if ("sampling_size".equals(path) && value instanceof String) {
+			try{
+				int size = Integer.valueOf((String) value);
+				if (size < 1) return false;
+				this.config.sampleSize = size;
+				devotion().getConfig().set("monitors." + getName() + ".sampling_size", size);
+				return true;
+			} catch (NumberFormatException nfe) {
+				return false;
+			}
+		} else if ("sampling".equals(path) && value instanceof String) {
+			try {
+				SamplingMethod current = this.config.technique;
+				SamplingMethod method = SamplingMethod.valueOf((String)value);
+				if (method.equals(SamplingMethod.roundrobin)) {
+					method = SamplingMethod.periodic;
+				}
+				if (current == method) return true;
+				this.onDisable();
+				this.config.technique = method;
+				devotion().getConfig().set("monitors." + getName() + ".sampling", method.toString());
+				this.onEnable();
+				return true;
+			} catch (IllegalArgumentException iae) {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public String getConfigs() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(ChatColor.WHITE).append(" debug").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
+			.append("Set to on / off to activate or deactivate debug mode, which is just increased output on what's going on.\n");
+		sb.append(ChatColor.WHITE).append(" sampling_period").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
+			.append("Put a value greater than 0 to introduce a delay between movement records or sampling passes. ")
+			.append("Set to 0 to potentially capture all movement. Note this may restart the Monitor with some data loss.\n");
+		sb.append(ChatColor.WHITE).append(" sampling_size").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
+			.append("Put a value greater than 0, indicates the number of players to sample during a sampling pass.\n");
+		sb.append(ChatColor.WHITE).append(" sampling").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
+			.append("Use ").append(ChatColor.WHITE).append("onevent").append(ChatColor.DARK_AQUA).append(" to capture movement on an event basis, use ")
+			.append(ChatColor.WHITE).append("periodic").append(ChatColor.DARK_AQUA).append(" to capture movement using a tick based clock to interpret sampling period, use ")
+			.append(ChatColor.WHITE).append("continuous").append(ChatColor.DARK_AQUA).append(" to capture movement using a self-adjusting clock to hold more strictly to milliseconds in sampling period.")
+			.append(" Note this may restart the Monitor with some data loss.\n");
+		return sb.toString();
 	}
 }

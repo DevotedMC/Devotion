@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -101,7 +102,9 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 			}
 			long now = System.currentTimeMillis();
 			boolean res = (now - captureTimes[pit.getIdx()]) > config.delayBetweenSamples;
-			captureTimes[pit.getIdx()] = now;
+			if (res) { // if we are clear to capture, update time, otherwise hold it at old value.
+				captureTimes[pit.getIdx()] = now;
+			}
 			return res;
 		}
 	}
@@ -213,7 +216,7 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=false)
-	public void onPlayerBucketFill(PlayerBucketEmptyEvent event) {
+	public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
 		if (!canWriteLog(event.getPlayer())) return;
 		if (checkInsert(event.getPlayer().getUniqueId(), PlayerInteractionType.PlayerBucketEmptyEvent)) {
 			insert(event);
@@ -362,5 +365,35 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 		if (checkInsert(event.getPlayer().getUniqueId(), PlayerInteractionType.BlockBreakEvent)) {
 			insert(event);
 		} // else skip.
+	}
+
+	@Override
+	public boolean setConfig(String path, Object value) {
+		if ("debug".equalsIgnoreCase(path) && value instanceof Boolean) {
+			this.setDebug((Boolean) value);
+			devotion().getConfig().set("monitors." + getName() + ".debug", (Boolean) value);
+			return true;
+		} else if ("sampling_delay".equals(path) && value instanceof String) {
+			try{
+				long delay = Long.valueOf((String) value);
+				if (delay < 0) return false;
+				this.config.delayBetweenSamples = delay;
+				devotion().getConfig().set("monitors." + getName() + ".sampling_delay", delay);
+				return true;
+			} catch (NumberFormatException nfe) {
+				return false;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public String getConfigs() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(ChatColor.WHITE).append(" debug").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
+			.append("Set to on / off to activate or deactivate debug mode, which is just increased output on what's going on.\n");
+		sb.append(ChatColor.WHITE).append(" sampling_delay").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
+			.append("Put a value greater than 0 to introduce a delay between sampling. Set to 0 to capture all interactions.\n");
+		return sb.toString();
 	}
 }

@@ -22,7 +22,7 @@ public final class Control extends AbstractCommand {
 			String modes = args.get(1);
 			Boolean mode = "on".equals(modes) ? Boolean.TRUE : ("off".equals(modes) ? Boolean.FALSE : null);
 			if (mode == null) {
-				sender.sendMessage("Mode must be on or off, use /dev-s to see current mode");
+				sender.sendMessage("Mode must be on or off, use /devotion s to see current mode");
 			} else {
 				for (Monitor m : this.plugin.getMonitors()) {
 					if (m.getName().equals(args.get(0))) {

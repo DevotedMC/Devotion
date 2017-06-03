@@ -101,4 +101,16 @@ public class PlayerInventoryMonitor extends Monitor implements Listener {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public boolean setConfig(String path, Object value) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String getConfigs() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -28,7 +28,7 @@ public class fPlayerVehicleExit extends fPlayer {
 			this.vehicleInfo.trace_id = this.eventInfo.trace_id;
 			
 			this.vehicleInfo.vehicle_type = event.getVehicle() != null ? event.getVehicle().getType().name(): null;
-			this.vehicleInfo.vehicle_name = event.getVehicle() != null ? event.getVehicle().getType().name(): null;
+			this.vehicleInfo.vehicle_name = event.getVehicle() != null ? event.getVehicle().getCustomName(): null;
 			this.vehicleInfo.eventCancelled = event.isCancelled();
 		}
 	}

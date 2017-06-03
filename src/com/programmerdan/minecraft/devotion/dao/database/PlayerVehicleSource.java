@@ -30,12 +30,12 @@ public class PlayerVehicleSource extends Source {
 		}
 
 		if(info.vehicle_name != null) {
-			sql.setString(2, info.vehicle_name); 
+			sql.setString(3, info.vehicle_name); 
 		} else {
-			sql.setNull(2, Types.VARCHAR);
+			sql.setNull(3, Types.VARCHAR);
 		}
 		
-		sql.setBoolean(3, info.eventCancelled);
+		sql.setBoolean(4, info.eventCancelled);
 		
 		sql.addBatch();
 	}

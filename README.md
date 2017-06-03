@@ -20,13 +20,13 @@ Specific Features:
 * (PARTIAL) Player potion use events are tracked (splash, bottle, brew)
 * (PARTIAL) Player enchantment events are tracked (anvil, table, XP gains and uses)
 * Player food use events are tracked
-* Player movement and vehicle movement, use is tracked (horse, boat, minecart, etc)
+* Vehicle use is tracked (horse, boat, minecart, etc)
 * (TODO) Player redstone interactions (buttons, plates, levers) are tracked
 * Player door interactions are tracked (doors, gates)
 * Player bucket use is tracked
 * Player death events are tracked
 * (TODO) Player damage events are tracked (lightning, fall, drowning, poison/sick, suffocation)
-* Player movement events are tracked (rate limited)
+* Player movement events are tracked (optionally rate limited, tracks horse, boat, minecart movement too)
 * (TODO) Player chat events are tracked
 * (TODO) Player command events are tracked (successful and unsuccessful)
 

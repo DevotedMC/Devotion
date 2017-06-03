@@ -45,7 +45,14 @@ public final class Watch extends AbstractCommand {
 			return true;
 		}
 		
-		WatchEvent event = new WatchEvent(WatchEventType.TOGGLE, player);
+		WatchEventType type = WatchEventType.TOGGLE;
+		if (args.size() > 1 && args.get(1).equalsIgnoreCase("add")) {
+			type = WatchEventType.ADD;
+		} else if (args.size() > 1 && args.get(1).equalsIgnoreCase("remove")) {
+			type = WatchEventType.REMOVE;
+		}
+		
+		WatchEvent event = new WatchEvent(type, player);
 		Bukkit.getPluginManager().callEvent(event);
 		
 		event.getMessages().forEach(m -> sender.sendMessage(m));
