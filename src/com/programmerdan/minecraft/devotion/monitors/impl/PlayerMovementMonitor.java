@@ -446,15 +446,24 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 	@Override
 	public String getConfigs() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(ChatColor.WHITE).append(" debug").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
-			.append("Set to on / off to activate or deactivate debug mode, which is just increased output on what's going on.\n");
-		sb.append(ChatColor.WHITE).append(" sampling_period").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
-			.append("Put a value greater than 0 to introduce a delay between movement records or sampling passes. ")
+		sb.append(ChatColor.WHITE).append(" debug")
+			.append(ChatColor.GRAY).append("=").append(ChatColor.GOLD).append(this.isDebug())
+			.append(ChatColor.GRAY).append(" - ")
+			.append(ChatColor.DARK_AQUA).append("Set to on / off to activate or deactivate debug mode, which is just increased output on what's going on.\n");
+		sb.append(ChatColor.WHITE).append(" sampling_period")
+			.append(ChatColor.GRAY).append("=").append(ChatColor.GOLD).append(config.timeoutBetweenSampling)
+			.append(ChatColor.GRAY).append(" - ")
+			.append(ChatColor.DARK_AQUA).append("Put a value greater than 0 to introduce a delay between movement records or sampling passes. ")
 			.append("Set to 0 to potentially capture all movement. Note this may restart the Monitor with some data loss.\n");
-		sb.append(ChatColor.WHITE).append(" sampling_size").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
-			.append("Put a value greater than 0, indicates the number of players to sample during a sampling pass.\n");
-		sb.append(ChatColor.WHITE).append(" sampling").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
-			.append("Use ").append(ChatColor.WHITE).append("onevent").append(ChatColor.DARK_AQUA).append(" to capture movement on an event basis, use ")
+		sb.append(ChatColor.WHITE).append(" sampling_size")
+			.append(ChatColor.GRAY).append("=").append(ChatColor.GOLD).append(config.sampleSize)
+			.append(ChatColor.GRAY).append(" - ")
+			.append(ChatColor.DARK_AQUA).append("Put a value greater than 0, indicates the number of players to sample during a sampling pass.\n");
+		sb.append(ChatColor.WHITE).append(" sampling")
+			.append(ChatColor.GRAY).append("=").append(ChatColor.GOLD).append(config.technique.toString())
+			.append(ChatColor.GRAY).append(" - ")
+			.append(ChatColor.DARK_AQUA).append("Use ").append(ChatColor.WHITE).append("onevent")
+			.append(ChatColor.DARK_AQUA).append(" to capture movement on an event basis, use ")
 			.append(ChatColor.WHITE).append("periodic").append(ChatColor.DARK_AQUA).append(" to capture movement using a tick based clock to interpret sampling period, use ")
 			.append(ChatColor.WHITE).append("continuous").append(ChatColor.DARK_AQUA).append(" to capture movement using a self-adjusting clock to hold more strictly to milliseconds in sampling period.")
 			.append(" Note this may restart the Monitor with some data loss.\n");

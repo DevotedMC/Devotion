@@ -36,6 +36,7 @@ import org.bukkit.event.player.PlayerResourcePackStatusEvent;
 import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerStatisticIncrementEvent;
 
+import com.google.common.collect.Sets;
 import com.programmerdan.minecraft.devotion.Devotion;
 import com.programmerdan.minecraft.devotion.config.PlayerInteractionMonitorConfig;
 import com.programmerdan.minecraft.devotion.dao.Flyweight;
@@ -92,6 +93,9 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 	private ConcurrentHashMap<UUID, long[]> lastCapture;
 	
 	private boolean checkInsert(UUID player, PlayerInteractionType pit) {
+		if (config.active.size() > 0 && !config.active.contains(pit)) {// if 0, all are OK; if > 0, only matches tracked
+			return false;
+		}
 		if (!checkDelay) {
 			return true;
 		} else {
@@ -124,6 +128,20 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 		if (config == null) return null;
 		PlayerInteractionMonitorConfig pimc = new PlayerInteractionMonitorConfig();
 		pimc.delayBetweenSamples = config.getLong("sampling_delay", 10l);
+		pimc.active = Sets.newConcurrentHashSet();
+		if (config.isList("active")) {
+			List<String> actives = config.getStringList("active");
+			if (actives != null && actives.size() > 0) {
+				actives.forEach( s -> {
+					try {
+						PlayerInteractionType pit = PlayerInteractionType.valueOf(s);
+						pimc.active.add(pit);
+					} catch (IllegalArgumentException e) {
+						// not a match
+					}
+				});
+			}
+		}
 		PlayerInteractionMonitor pim = new PlayerInteractionMonitor(pimc);
 		pim.setDebug(config.getBoolean("debug", Devotion.instance().isDebug()));
 		pim.initWatch(config);
@@ -383,6 +401,25 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 			} catch (NumberFormatException nfe) {
 				return false;
 			}
+		} else if ("active".equals(path) && value instanceof String) {
+			try {
+				PlayerInteractionType pit = PlayerInteractionType.valueOf( (String) value);
+				if (this.config.active.contains(pit)) {
+					this.config.active.remove(pit);
+					List<String> list = devotion().getConfig().getStringList("monitors." + getName() + ".active");
+					list.remove(pit.toString());
+					devotion().getConfig().set("monitors." + getName() + ".active", list);
+					return true;
+				} else {
+					this.config.active.add(pit);
+					List<String> list = devotion().getConfig().getStringList("monitors." + getName() + ".active");
+					list.add(pit.toString());
+					devotion().getConfig().set("monitors." + getName() + ".active", list);
+					return true;					
+				}
+			} catch (IllegalArgumentException iae) {
+				return false;
+			}
 		}
 		return false;
 	}
@@ -390,10 +427,24 @@ public class PlayerInteractionMonitor extends Monitor implements Listener {
 	@Override
 	public String getConfigs() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(ChatColor.WHITE).append(" debug").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
-			.append("Set to on / off to activate or deactivate debug mode, which is just increased output on what's going on.\n");
-		sb.append(ChatColor.WHITE).append(" sampling_delay").append(ChatColor.GRAY).append(" - ").append(ChatColor.DARK_AQUA)
-			.append("Put a value greater than 0 to introduce a delay between sampling. Set to 0 to capture all interactions.\n");
+		sb.append(ChatColor.WHITE).append(" debug")
+			.append(ChatColor.GRAY).append("=").append(ChatColor.GOLD).append(this.isDebug())
+			.append(ChatColor.GRAY).append(" - ")
+			.append(ChatColor.DARK_AQUA).append("Set to on / off to activate or deactivate debug mode, which is just increased output on what's going on.\n");
+		sb.append(ChatColor.WHITE).append(" sampling_delay")
+			.append(ChatColor.GRAY).append("=").append(ChatColor.GOLD).append(config.delayBetweenSamples)
+			.append(ChatColor.GRAY).append(" - ")
+			.append(ChatColor.DARK_AQUA).append("Put a value greater than 0 to introduce a delay between sampling. Set to 0 to capture all interactions.\n");
+		sb.append(ChatColor.WHITE).append(" active").append(ChatColor.GRAY).append(" - ")
+			.append(ChatColor.DARK_AQUA).append("Name a specific type of interaction to toggle its capture. Toggle all off to enable all as a shortcut.\n");
+		sb.append("  Valid interactions:\n");
+		for (PlayerInteractionType pit : PlayerInteractionType.values()) {
+			sb.append("   ").append(ChatColor.WHITE).append(pit.toString());
+			if (this.config.active.contains(pit)) {
+				sb.append(ChatColor.GRAY).append(" - ").append(ChatColor.GREEN).append("Active");
+			}
+			sb.append("\n");
+		}
 		return sb.toString();
 	}
 }

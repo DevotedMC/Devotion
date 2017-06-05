@@ -1,5 +1,9 @@
 package com.programmerdan.minecraft.devotion.config;
 
+import java.util.Set;
+
+import com.programmerdan.minecraft.devotion.monitors.PlayerInteractionType;
+
 /**
  * Wrapper class for Interaction monitoring.
  * 
@@ -8,4 +12,6 @@ package com.programmerdan.minecraft.devotion.config;
  */
 public class PlayerInteractionMonitorConfig {
 	public long delayBetweenSamples;
+	
+	public Set<PlayerInteractionType> active;
 }
