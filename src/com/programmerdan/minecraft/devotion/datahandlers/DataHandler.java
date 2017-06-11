@@ -3,7 +3,7 @@ package com.programmerdan.minecraft.devotion.datahandlers;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
-import net.minecraft.server.v1_10_R1.MinecraftServer;
+import net.minecraft.server.v1_12_R1.MinecraftServer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;

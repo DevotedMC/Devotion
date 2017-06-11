@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.avaje.ebeaninternal.server.lib.sql.DataSourceException;
 import com.programmerdan.minecraft.devotion.dao.info.PatchInfo;
 import com.programmerdan.minecraft.devotion.util.ResourceHelper;
 
@@ -204,7 +203,7 @@ public class SqlDatabase {
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
         } catch (Exception ex) {
-            throw new DataSourceException("Failed to initialize JDBC driver.");
+            throw new RuntimeException("Failed to initialize JDBC driver.");
         }
         try {
             this.connection = DriverManager.getConnection(jdbc);
