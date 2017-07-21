@@ -118,7 +118,9 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 		if (!onlyAsynch) {
 			lastMovementSample = new ConcurrentHashMap<UUID, Long>(5000, .75f, 5);
 			onlyEvent = true;
+			super.setEnabled(true);
 		} else{
+			super.setEnabled(true);
 			asynch = new MonitorSamplingThread(this);
 			if (SamplingMethod.continuous.equals(this.config.technique)) {
 				asynch.startAdaptive(this.config.timeoutBetweenSampling);
@@ -128,8 +130,6 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 		}
 		
 		Devotion.instance().getServer().getPluginManager().registerEvents(this, Devotion.instance());
-
-		super.setEnabled(true);
 	}
 
 	@Override
@@ -141,7 +141,11 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 		// Note: if asynch is set, it auto-self-terminates when this monitor is disabled.
 		//  all the same, calling cancel explicitly here (for now: TODO)
 		if (asynch != null) {
-			asynch.cancel();
+			try {
+				asynch.cancel();
+			} catch (IllegalStateException e) {
+				Devotion.logger().log(Level.WARNING, "Asynch thread never started -- weird.");
+			}
 		}
 
 		super.setEnabled(false);
@@ -329,7 +333,9 @@ public class PlayerMovementMonitor extends Monitor implements Listener {
 			now = playersToMonitor.poll();
 			if (start.equals(now)) break; // we've sampled everyone
 		}
-		checkRemove(start); // put first person back on the list.
+		if (start != null) {
+			checkRemove(start); // put first person back on the list.
+		}
 		isSampling.set(false);
 	}
 	
