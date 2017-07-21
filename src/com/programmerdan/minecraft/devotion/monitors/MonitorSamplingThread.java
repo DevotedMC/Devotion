@@ -2,6 +2,8 @@ package com.programmerdan.minecraft.devotion.monitors;
 
 import net.minecraft.server.v1_10_R1.MinecraftServer;
 
+import java.util.logging.Level;
+
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.programmerdan.minecraft.devotion.Devotion;
@@ -35,6 +37,7 @@ public class MonitorSamplingThread extends BukkitRunnable {
 	 * @param targetDelay server Ticks between invocations.
 	 */
 	public void startPeriodic(long targetDelay) {
+		Devotion.logger().log(Level.INFO, "Starting Periodic Monitor Sampling Thread");
 		this.targetDelay = targetDelay;
 		if (adaptive) {
 			this.cancel();
@@ -50,6 +53,7 @@ public class MonitorSamplingThread extends BukkitRunnable {
 	 * @param targetDelay Milliseconds between invocations.
 	 */
 	public void startAdaptive(long targetDelay) {
+		Devotion.logger().log(Level.INFO, "Starting Adaptive Monitor Sampling Thread");
 		this.targetDelay = targetDelay;
 		
 		if (!adaptive) {
